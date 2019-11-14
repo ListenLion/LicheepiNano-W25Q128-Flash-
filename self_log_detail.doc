@@ -1,0 +1,280 @@
+﻿
+Licheepi Nano 带FLASH的：屏幕是自己买的5寸屏，
+使用的是https://whycan.cn/t_3010.html这个网址的SPI FLASH 但是将最后一项去掉了，包括在设备树中的设置
+
+
+
+其中，Uboot 的设置是按着这里面设置的，但是没用使用这里面的机制【使用SquashFS  + OverlayFS】说的这种机制，使用的是http://nano.lichee.pro/build_sys/build_flash.html这里面的参数：
+bootargs修改：将rootfstype= SquashFS  改成 rootfstype=jffs2
+其中其他的设置可以参考https://whycan.cn/t_2179.html
+包括设置输出日志linux的编译参考的也是官方给出的配置。
+
+
+buildroot的使用和编译使用的是官方的出现错误，错误形式是：
+https://whycan.cn/t_1180.html
+
+此链接的22#
+
+我遇到的是：
+https://whycan.cn/t_1017.html
+此链接的#3类似的情况，其中是编译uboot和kenel好好的但是遇到其他的问题了
+
+其中下载的是此链接：
+https://whycan.cn/t_2002.html
+的15楼的晕哥给出的Nano_flash_800480分别解压后，使用的是他的根文件系统
+
+需要详细的分清楚bootargs 和bootcmd的里面的区别。以及SPI FLASH里面设备树设置的分区的位置。
+
+接下来分析一波整体启动流程涉及需要的必备的～～
+https://whycan.cn/t_1017.html
+上述链接涉及的是内核的重载和卸载～～～
+
+启动情况是下面的这种：
+
+U-Boot SPL 2018.01-05679-g013ca457fd-dirty (Oct 13 2019 - 12:03:22)             
+DRAM: 32 MiB                                                                    
+Trying to boot from MMC1                                                        
+Card did not respond to voltage select!                                         
+mmc_init: -95, time 22                                                          
+spl: mmc init failed with error: -95                                            
+Trying to boot from sunxi SPI                                                   
+                                                                                
+                                                                                
+U-Boot 2018.01-05679-g013ca457fd-dirty (Oct 13 2019 - 12:03:22 +0800) Allwinnery
+                                                                                
+CPU:   Allwinner F Series (SUNIV)                                               
+Model: Lichee Pi Nano                                                           
+DRAM:  32 MiB                                                                   
+MMC:   SUNXI SD/MMC: 0                                                          
+SF: Detected w25q128bv with page size 256 Bytes, erase size 4 KiB, total 16 MiB 
+*** Warning - bad CRC, using default environment                                
+                                                                                
+Setting up a 800x480 lcd console (overscan 0x0)                                 
+In:    serial@1c25000                                                           
+Out:   serial@1c25000                                                           
+Err:   serial@1c25000                                                           
+Net:   No ethernet found.                                                       
+starting USB...                                                                 
+No controllers found                                                            
+Hit any key to stop autoboot:  0                                                
+SF: Detected w25q128bv with page size 256 Bytes, erase size 4 KiB, total 16 MiB 
+device 0 offset 0x60000, size 0x4000                                            
+SF: 16384 bytes @ 0x60000 Read: OK                                              
+device 0 offset 0x64000, size 0x400000                                          
+SF: 4194304 bytes @ 0x64000 Read: OK                                            
+## Flattened Device Tree blob at 80c00000                                       
+   Booting using the fdt blob at 0x80c00000                                     
+   Loading Device Tree to 80e61000, end 80e65ebb ... OK                         
+                                                                                
+Starting kernel ...                                                             
+                                                                                
+[    0.000000] Booting Linux on physical CPU 0x0                                
+[    0.000000] Linux version 4.14.0-licheepi-nano+ (ls@LS-Y) (gcc version 7.2.19
+[    0.000000] CPU: ARM926EJ-S [41069265] revision 5 (ARMv5TEJ), cr=0005317f    
+[    0.000000] CPU: VIVT data cache, VIVT instruction cache                     
+[    0.000000] OF: fdt: Machine model: Lichee Pi Nano                           
+[    0.000000] Memory policy: Data cache writeback                              
+[    0.000000] random: fast init done                                           
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 8128      
+[    0.000000] Kernel command line: console=ttyS0,115200 panic=5 rootwait root=2
+[    0.000000] PID hash table entries: 128 (order: -3, 512 bytes)               
+[    0.000000] Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)    
+[    0.000000] Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)      
+[    0.000000] Memory: 22672K/32768K available (6144K kernel code, 212K rwdata,)
+[    0.000000] Virtual kernel memory layout:                                    
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)                
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)                
+[    0.000000]     vmalloc : 0xc2800000 - 0xff800000   ( 976 MB)                
+[    0.000000]     lowmem  : 0xc0000000 - 0xc2000000   (  32 MB)                
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)                
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)                
+[    0.000000]       .text : 0xc0008000 - 0xc0700000   (7136 kB)                
+[    0.000000]       .init : 0xc0900000 - 0xc0a00000   (1024 kB)                
+[    0.000000]       .data : 0xc0a00000 - 0xc0a35100   ( 213 kB)                
+[    0.000000]        .bss : 0xc0a3a50c - 0xc0a7929c   ( 252 kB)                
+[    0.000000] SLUB: HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1       
+[    0.000000] NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16                  
+[    0.000049] sched_clock: 32 bits at 24MHz, resolution 41ns, wraps every 8947s
+[    0.000118] clocksource: timer: mask: 0xffffffff max_cycles: 0xffffffff, maxs
+[    0.000734] Console: colour dummy device 80x30                               
+[    0.000832] Calibrating delay loop... 203.16 BogoMIPS (lpj=1015808)          
+[    0.070245] pid_max: default: 32768 minimum: 301                             
+[    0.070610] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)      
+[    0.070660] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes) 
+[    0.072221] CPU: Testing write buffer coherency: ok                          
+[    0.074138] Setting up static identity map for 0x80100000 - 0x80100058       
+[    0.076649] devtmpfs: initialized                                            
+[    0.083501] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, ms
+[    0.083571] futex hash table entries: 256 (order: -1, 3072 bytes)            
+[    0.083854] pinctrl core: initialized pinctrl subsystem                      
+[    0.086160] NET: Registered protocol family 16                               
+[    0.088129] DMA: preallocated 256 KiB pool for atomic coherent allocations   
+[    0.090023] cpuidle: using governor menu                                     
+[    0.115960] SCSI subsystem initialized                                       
+[    0.116327] usbcore: registered new interface driver usbfs                   
+[    0.116469] usbcore: registered new interface driver hub                     
+[    0.116692] usbcore: registered new device driver usb                        
+[    0.117198] pps_core: LinuxPPS API ver. 1 registered                         
+[    0.117224] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giom>
+[    0.117298] PTP clock support registered                                     
+[    0.117803] Advanced Linux Sound Architecture Driver Initialized.            
+[    0.120963] clocksource: Switched to clocksource timer                       
+[    0.149602] NET: Registered protocol family 2                                
+[    0.151240] TCP established hash table entries: 1024 (order: 0, 4096 bytes)  
+[    0.151320] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)         
+[    0.151372] TCP: Hash tables configured (established 1024 bind 1024)         
+[    0.151730] UDP hash table entries: 256 (order: 0, 4096 bytes)               
+[    0.151804] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)          
+[    0.152288] NET: Registered protocol family 1                                
+[    0.153400] RPC: Registered named UNIX socket transport module.              
+[    0.153444] RPC: Registered udp transport module.                            
+[    0.153459] RPC: Registered tcp transport module.                            
+[    0.153476] RPC: Registered tcp NFSv4.1 backchannel transport module.        
+[    0.154018] NetWinder Floating Point Emulator V0.97 (double precision)       
+[    0.155944] Initialise system trusted keyrings                               
+[    0.156600] workingset: timestamp_bits=30 max_order=13 bucket_order=0        
+[    0.172486] squashfs: version 4.0 (2009/01/31) Phillip Lougher               
+[    0.174929] NFS: Registering the id_resolver key type                        
+[    0.175029] Key type id_resolver registered                                  
+[    0.175049] Key type id_legacy registered                                    
+[    0.175174] jffs2: version 2.2. (NAND) �© 2001-2006 Red Hat, Inc.            
+[    0.189781] Key type asymmetric registered                                   
+[    0.189824] Asymmetric key parser 'x509' registered                          
+[    0.190044] Block layer SCSI generic (bsg) driver version 0.4 loaded (major )
+[    0.190077] io scheduler noop registered                                     
+[    0.190095] io scheduler deadline registered                                 
+[    0.190896] io scheduler cfq registered (default)                            
+[    0.190928] io scheduler mq-deadline registered                              
+[    0.191086] io scheduler kyber registered                                    
+[    0.192222] sun4i-usb-phy 1c13400.phy: Couldn't request ID GPIO              
+[    0.202675] suniv-pinctrl 1c20800.pinctrl: initialized sunXi PIO driver      
+[    0.386958] Serial: 8250/16550 driver, 8 ports, IRQ sharing disabled         
+[    0.394438] console [ttyS0] disabled                                         
+[    0.414697] 1c25000.serial: ttyS0 at MMIO 0x1c25000 (irq = 22, base_baud = 6A
+[    0.898902] console [ttyS0] enabled                                          
+[    0.908266] SCSI Media Changer driver v0.25                                  
+[    0.916328] m25p80 spi0.0: w25q128 (16384 Kbytes)                            
+[    0.921269] 4 ofpart partitions found on MTD device spi0.0                   
+[    0.926757] Creating 4 MTD partitions on "spi0.0":                           
+[    0.931627] 0x000000000000-0x000000058000 : "u-boot"                         
+[    0.939439] 0x000000060000-0x000000064000 : "dtb"                            
+[    0.946935] 0x000000064000-0x000000464000 : "kernel"                         
+[    0.954738] 0x000000464000-0x000000960000 : "rootfs"                         
+[    0.962892] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver       
+[    0.969431] ehci-platform: EHCI generic platform driver                      
+[    0.975060] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver           
+[    0.981378] ohci-platform: OHCI generic platform driver                      
+[    0.987000] usbcore: registered new interface driver usb-storage             
+[    0.994070] udc-core: couldn't find an available UDC - added [g_cdc] to lists
+[    1.003145] i2c /dev entries driver                                          
+[    1.061100] sunxi-mmc 1c0f000.mmc: base:0xc28a6000 irq:18                    
+[    1.068667] usbcore: registered new interface driver usbhid                  
+[    1.074371] usbhid: USB HID core driver                                      
+[    1.096997] NET: Registered protocol family 17                               
+[    1.101872] Key type dns_resolver registered                                 
+[    1.108543] Loading compiled-in X.509 certificates                           
+[    1.124710] usb_phy_generic usb_phy_generic.0.auto: usb_phy_generic.0.auto sr
+[    1.136568] ------------[ cut here ]------------                             
+[    1.141412] WARNING: CPU: 0 PID: 3 at drivers/usb/musb/sunxi.c:411 sunxi_mus4
+[    1.150265] sunxi_musb_ep_offset called with non 0 offset                    
+[    1.155728] Modules linked in:                                               
+[    1.158807] CPU: 0 PID: 3 Comm: kworker/0:0 Not tainted 4.14.0-licheepi-nano5
+[    1.166224] Hardware name: Allwinner suniv Family                            
+[    1.170948] Workqueue: events deferred_probe_work_func                       
+[    1.176213] [<c010e50c>] (unwind_backtrace) from [<c010b68c>] (show_stack+0x)
+[    1.184046] [<c010b68c>] (show_stack) from [<c011666c>] (__warn+0xd4/0xfc)   
+[    1.190924] [<c011666c>] (__warn) from [<c01166cc>] (warn_slowpath_fmt+0x38/)
+[    1.198479] [<c01166cc>] (warn_slowpath_fmt) from [<c0476cb8>] (sunxi_musb_e)
+[    1.207266] [<c0476cb8>] (sunxi_musb_ep_offset) from [<c046a7c4>] (ep_config)
+[    1.216113] [<c046a7c4>] (ep_config_from_hw) from [<c046c438>] (musb_probe+0)
+[    1.224173] [<c046c438>] (musb_probe) from [<c03f27e0>] (platform_drv_probe+)
+[    1.232147] [<c03f27e0>] (platform_drv_probe) from [<c03f0ff8>] (driver_prob)
+[    1.241087] [<c03f0ff8>] (driver_probe_device) from [<c03ef618>] (bus_for_ea)
+[    1.249619] [<c03ef618>] (bus_for_each_drv) from [<c03f0ce0>] (__device_atta)
+[    1.257929] [<c03f0ce0>] (__device_attach) from [<c03f02ec>] (bus_probe_devi)
+[    1.266157] [<c03f02ec>] (bus_probe_device) from [<c03ee774>] (device_add+0x)
+[    1.274129] [<c03ee774>] (device_add) from [<c03f25f8>] (platform_device_add)
+[    1.282357] [<c03f25f8>] (platform_device_add) from [<c03f2fc8>] (platform_d)
+[    1.292150] [<c03f2fc8>] (platform_device_register_full) from [<c0476914>] ()
+[    1.301759] [<c0476914>] (sunxi_musb_probe) from [<c03f27e0>] (platform_drv_)
+[    1.310199] [<c03f27e0>] (platform_drv_probe) from [<c03f0ff8>] (driver_prob)
+[    1.319131] [<c03f0ff8>] (driver_probe_device) from [<c03ef618>] (bus_for_ea)
+[    1.327711] [<c03ef618>] (bus_for_each_drv) from [<c03f0ce0>] (__device_atta)
+[    1.336016] [<c03f0ce0>] (__device_attach) from [<c03f02ec>] (bus_probe_devi)
+[    1.344228] [<c03f02ec>] (bus_probe_device) from [<c03f0728>] (deferred_prob)
+[    1.353320] [<c03f0728>] (deferred_probe_work_func) from [<c0129a7c>] (proce)
+[    1.362509] [<c0129a7c>] (process_one_work) from [<c0129f2c>] (worker_thread)
+[    1.370699] [<c0129f2c>] (worker_thread) from [<c012efc8>] (kthread+0x120/0x)
+[    1.378155] [<c012efc8>] (kthread) from [<c0107da8>] (ret_from_fork+0x14/0x2)
+[    1.385409] ---[ end trace 45bc7dd67f8ebf46 ]---                             
+[    1.390041] musb-sunxi 1c13000.usb: Error unknown readb offset 128           
+[    1.396374] musb-hdrc musb-hdrc.1.auto: musb_init_controller failed with sta2
+[    1.404209] musb-hdrc: probe of musb-hdrc.1.auto failed with error -22       
+[    1.411724] ALSA device list:                                                
+[    1.414772]   #0: Loopback 1                                                 
+[    1.419014] jffs2: Flash size not aligned to erasesize, reducing to 5056KiB  
+[    1.523196] random: crng init done                                           
+[    2.579590] VFS: Mounted root (jffs2 filesystem) on device 31:3.             
+[    2.587601] devtmpfs: mounted                                                
+[    2.595080] Freeing unused kernel memory: 1024K                              
+Starting logging: OK                                                            
+Jan  1 00:00:09 Lichee syslog.info syslogd started: BusyBox v1.27.1             
+Jan  1 00:00:09 Lichee user.notice kernel: klogd started: BusyBox v1.27.1 (2018)
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Booting Linux on physic0
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000] Linux version 4.14.0-9
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] CPU: ARM926EJ-S [410692f
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] CPU: VIVT data cache, Ve
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] OF: fdt: Machine model:o
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Memory policy: Data cack
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000] On node 0 totalpages: 2
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000] free_area_init_node: n0
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000]   Normal zone: 64 pagep
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000]   Normal zone: 0 pagesd
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000]   Normal zone: 8192 pa0
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000] random: fast init done
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000] pcpu-alloc: s0 r0 d3278
+Jan  1 00:00:09 Lichee user.debug kernel: [    0.000000] pcpu-alloc: [0] 0      
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Built 1 zonelists, mobi8
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000] Kernel command line: 2
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] PID hash table entries:)
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Dentry cache hash table)
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Inode-cache hash table )
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] Memory: 22672K/32768K a)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000] Virtual kernel memory:
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     vector  : 0xffff0)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     fixmap  : 0xffc00)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     vmalloc : 0xc2800)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     lowmem  : 0xc0000)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     pkmap   : 0xbfe00)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]     modules : 0xbf000)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]       .text : 0xc0008)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]       .init : 0xc0900)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]       .data : 0xc0a00)
+Jan  1 00:00:09 Lichee user.notice kernel: [    0.000000]        .bss : 0xc0a3a)
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] SLUB: HWalign=32, Order1
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000000] NR_IRQS: 16, nr_irqs: 16
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000049] sched_clock: 32 bits ats
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000118] clocksource: timer: mass
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000734] Console: colour dummy d0
+Jan  1 00:00:09 Lichee user.info kernel: [    0.000832] Calibrating delay loop.)
+Jan  1 00:00:09 Lichee user.info kernel: [    0.070245] pid_max: default: 327681
+Jan  1 00:00:09 Lichee user.info kernel: [    0.070610] Mount-cache hash table )
+Jan  1 00:00:09 Lichee user.info kernel: [    0.070660] Mountpoint-cache hash t!
+Jan  1 00:00:12 Lichee user.warn kernel: [   12.049922] jffs2: warning: (53) jf!
+read-only file system detected...done                                           
+Jan  1 00:00:14 Lichee daemon.info : starting pid 70, tty '/dev/ttyS0': '/sbin/'
+                                                                                
+Welcome to Lichee Pi                                                            
+Lichee login: licheepi                                                          
+Password:                                                                       
+Login incorrect                                                                 
+Lichee login: root                                                              
+Password:                                                                       
+Jan  1 00:00:41 Lichee auth.info login[70]: root login on 'ttyS0'               
+# cd /                                                                          
+# ls                                                                            
+bin      lib      media    proc     sbin     usr                                
+dev      lib32    mnt      root     sys      var                                
+etc      linuxrc  opt      run      tmp                                         
+# 
+
